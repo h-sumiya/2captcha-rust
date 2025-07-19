@@ -1,10 +1,16 @@
 [package]
 name = "twocaptcha"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/h-sumiya/2captcha-rust"
 
 [dependencies]
-reqwest = { version = "0.12.22", features = ["json"] }
+reqwest = { version = "0.12.22", features = ["json", "multipart"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.141"
 tokio = { version = "1.46.1", features = ["full"] }
+base64 = "0.22.1"
+thiserror = "2.0.12"
+url = "2.5.4"
+async-trait = "0.1.88"
