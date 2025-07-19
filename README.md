@@ -3,16 +3,12 @@
 [2Captcha](https://2captcha.com/) API client written in Rust.
 
 **Important**: this is an unofficial project. It is a community port of the
-[official `2captcha-python` library](https://github.com/2captcha/2captcha-python)
-located in the `python/` directory of this repository.
+[official `2captcha-python` library](https://github.com/2captcha/2captcha-python).
 
 ## Installation
 
-Add `twocaptcha` to the `dependencies` section of your `Cargo.toml`:
-
-```toml
-[dependencies]
-twocaptcha = "0.0.1"
+```bash
+cargo add twocaptcha
 ```
 
 ## Example
