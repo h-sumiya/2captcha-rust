@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use twocaptcha::{RecaptchaVersion, TwoCaptcha};
+use twocaptcha::{RecaptchaVersion, TwoCaptcha, TwoCaptchaConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -7,15 +7,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api_key =
         std::env::var("TWOCAPTCHA_API_KEY").unwrap_or_else(|_| "YOUR_API_KEY".to_string());
 
-    let solver = TwoCaptcha::new(
-        api_key, None, // soft_id
-        None, // callback
-        None, // default_timeout
-        None, // recaptcha_timeout
-        None, // polling_interval
-        None, // server
-        None, // extended_response
-    );
+    let solver = TwoCaptcha::new(api_key, TwoCaptchaConfig::default());
 
     println!("2captcha Rust Library Example");
     println!("==============================");
