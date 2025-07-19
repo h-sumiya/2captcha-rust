@@ -1,8 +1,9 @@
 [package]
 name = "twocaptcha"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
 license = "MIT"
+description = "2Captcha API client written in Rust."
 repository = "https://github.com/h-sumiya/2captcha-rust"
 readme = "README.md"
 
