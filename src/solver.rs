@@ -1,12 +1,14 @@
+use base64::Engine;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
-use serde_json::Value;
-use base64::Engine;
 
 use crate::api::ApiClient;
-use crate::error::{TwoCaptchaError, Result};
-use crate::types::{AudioLanguage, CaptchaResult, ExtendedResponse, Proxy, RecaptchaVersion, Balance};
+use crate::error::{Result, TwoCaptchaError};
+use crate::types::{
+    AudioLanguage, Balance, CaptchaResult, ExtendedResponse, Proxy, RecaptchaVersion,
+};
 use crate::utils::Utils;
 
 /// Main TwoCaptcha solver client
@@ -49,7 +51,11 @@ impl TwoCaptcha {
     }
 
     /// Solve a normal captcha (image)
-    pub async fn normal(&self, file: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn normal(
+        &self,
+        file: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let method = Utils::get_method(file).await?;
         let mut all_params = method;
         if let Some(p) = params {
@@ -59,7 +65,12 @@ impl TwoCaptcha {
     }
 
     /// Solve an audio captcha
-    pub async fn audio(&self, file: &str, lang: AudioLanguage, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn audio(
+        &self,
+        file: &str,
+        lang: AudioLanguage,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let body = if !file.contains('.') && file.len() > 50 {
             // It's a base64 string
             file.to_string()
@@ -68,7 +79,8 @@ impl TwoCaptcha {
             let response = reqwest::get(file).await?;
             if response.status() != 200 {
                 return Err(TwoCaptchaError::Validation(format!(
-                    "File could not be downloaded from url: {}", file
+                    "File could not be downloaded from url: {}",
+                    file
                 )));
             }
             let content = response.bytes().await?;
@@ -79,7 +91,7 @@ impl TwoCaptcha {
             base64::engine::general_purpose::STANDARD.encode(&content)
         } else {
             return Err(TwoCaptchaError::Validation(
-                "File extension is not .mp3 or it is not a base64 string.".to_string()
+                "File extension is not .mp3 or it is not a base64 string.".to_string(),
             ));
         };
 
@@ -96,7 +108,11 @@ impl TwoCaptcha {
     }
 
     /// Solve a text captcha
-    pub async fn text(&self, text: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn text(
+        &self,
+        text: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("text".to_string(), text.to_string());
         all_params.insert("method".to_string(), "post".to_string());
@@ -110,31 +126,46 @@ impl TwoCaptcha {
 
     /// Solve reCAPTCHA (v2, v3)
     pub async fn recaptcha(
-        &self, 
-        sitekey: &str, 
-        url: &str, 
+        &self,
+        sitekey: &str,
+        url: &str,
         version: Option<RecaptchaVersion>,
         enterprise: Option<bool>,
-        params: Option<HashMap<String, String>>
+        params: Option<HashMap<String, String>>,
     ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("googlekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
         all_params.insert("method".to_string(), "userrecaptcha".to_string());
-        all_params.insert("version".to_string(), 
-            version.unwrap_or(RecaptchaVersion::V2).as_str().to_string());
-        all_params.insert("enterprise".to_string(), 
-            if enterprise.unwrap_or(false) { "1" } else { "0" }.to_string());
+        all_params.insert(
+            "version".to_string(),
+            version.unwrap_or(RecaptchaVersion::V2).as_str().to_string(),
+        );
+        all_params.insert(
+            "enterprise".to_string(),
+            if enterprise.unwrap_or(false) {
+                "1"
+            } else {
+                "0"
+            }
+            .to_string(),
+        );
 
         if let Some(p) = params {
             all_params.extend(p);
         }
 
-        self.solve(Some(self.recaptcha_timeout), None, all_params).await
+        self.solve(Some(self.recaptcha_timeout), None, all_params)
+            .await
     }
 
     /// Solve FunCaptcha
-    pub async fn funcaptcha(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn funcaptcha(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("publickey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -148,7 +179,13 @@ impl TwoCaptcha {
     }
 
     /// Solve GeeTest captcha
-    pub async fn geetest(&self, gt: &str, challenge: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn geetest(
+        &self,
+        gt: &str,
+        challenge: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("gt".to_string(), gt.to_string());
         all_params.insert("challenge".to_string(), challenge.to_string());
@@ -163,7 +200,12 @@ impl TwoCaptcha {
     }
 
     /// Solve hCaptcha
-    pub async fn hcaptcha(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn hcaptcha(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -184,13 +226,19 @@ impl TwoCaptcha {
         s_s_c_web_server_sign: &str,
         s_s_c_web_server_sign2: &str,
         url: &str,
-        params: Option<HashMap<String, String>>
+        params: Option<HashMap<String, String>>,
     ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("s_s_c_user_id".to_string(), s_s_c_user_id.to_string());
         all_params.insert("s_s_c_session_id".to_string(), s_s_c_session_id.to_string());
-        all_params.insert("s_s_c_web_server_sign".to_string(), s_s_c_web_server_sign.to_string());
-        all_params.insert("s_s_c_web_server_sign2".to_string(), s_s_c_web_server_sign2.to_string());
+        all_params.insert(
+            "s_s_c_web_server_sign".to_string(),
+            s_s_c_web_server_sign.to_string(),
+        );
+        all_params.insert(
+            "s_s_c_web_server_sign2".to_string(),
+            s_s_c_web_server_sign2.to_string(),
+        );
         all_params.insert("url".to_string(), url.to_string());
         all_params.insert("method".to_string(), "keycaptcha".to_string());
 
@@ -202,7 +250,12 @@ impl TwoCaptcha {
     }
 
     /// Solve Capy captcha
-    pub async fn capy(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn capy(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("captchakey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -216,7 +269,11 @@ impl TwoCaptcha {
     }
 
     /// Solve grid captcha (image)
-    pub async fn grid(&self, file: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn grid(
+        &self,
+        file: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let method = Utils::get_method(file).await?;
         let mut all_params = method;
         all_params.insert("recaptcha".to_string(), "1".to_string());
@@ -229,11 +286,15 @@ impl TwoCaptcha {
     }
 
     /// Solve canvas captcha (image)
-    pub async fn canvas(&self, file: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn canvas(
+        &self,
+        file: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let provided_params = params.clone().unwrap_or_default();
         if !provided_params.contains_key("hintText") && !provided_params.contains_key("hintImg") {
             return Err(TwoCaptchaError::Validation(
-                "parameters required: hintText and/or hintImg".to_string()
+                "parameters required: hintText and/or hintImg".to_string(),
             ));
         }
 
@@ -250,7 +311,11 @@ impl TwoCaptcha {
     }
 
     /// Solve coordinates captcha (image)
-    pub async fn coordinates(&self, file: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn coordinates(
+        &self,
+        file: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let method = Utils::get_method(file).await?;
         let mut all_params = method;
         all_params.insert("coordinatescaptcha".to_string(), "1".to_string());
@@ -263,7 +328,11 @@ impl TwoCaptcha {
     }
 
     /// Solve rotate captcha (image)
-    pub async fn rotate(&self, files: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn rotate(
+        &self,
+        files: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let file_method = Utils::get_method(files).await?;
         let mut all_params = HashMap::new();
         if let Some(file) = file_method.get("file") {
@@ -279,11 +348,15 @@ impl TwoCaptcha {
     }
 
     /// Solve rotate captcha with multiple files
-    pub async fn rotate_multiple(&self, files: Vec<String>, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn rotate_multiple(
+        &self,
+        files: Vec<String>,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let extracted_files = Utils::extract_files(files, self.max_files)?;
         let mut all_params = HashMap::new();
         all_params.insert("method".to_string(), "rotatecaptcha".to_string());
-        
+
         // Add files as parameters
         all_params.extend(extracted_files);
 
@@ -295,7 +368,12 @@ impl TwoCaptcha {
     }
 
     /// Solve GeeTest v4 captcha
-    pub async fn geetest_v4(&self, captcha_id: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn geetest_v4(
+        &self,
+        captcha_id: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("captcha_id".to_string(), captcha_id.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -309,7 +387,13 @@ impl TwoCaptcha {
     }
 
     /// Solve Lemin Cropped Captcha
-    pub async fn lemin(&self, captcha_id: &str, div_id: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn lemin(
+        &self,
+        captcha_id: &str,
+        div_id: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("captcha_id".to_string(), captcha_id.to_string());
         all_params.insert("div_id".to_string(), div_id.to_string());
@@ -324,7 +408,13 @@ impl TwoCaptcha {
     }
 
     /// Solve atbCAPTCHA
-    pub async fn atb_captcha(&self, app_id: &str, api_server: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn atb_captcha(
+        &self,
+        app_id: &str,
+        api_server: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("app_id".to_string(), app_id.to_string());
         all_params.insert("api_server".to_string(), api_server.to_string());
@@ -339,7 +429,12 @@ impl TwoCaptcha {
     }
 
     /// Solve Cloudflare Turnstile
-    pub async fn turnstile(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn turnstile(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -353,7 +448,14 @@ impl TwoCaptcha {
     }
 
     /// Solve Amazon WAF
-    pub async fn amazon_waf(&self, sitekey: &str, iv: &str, context: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn amazon_waf(
+        &self,
+        sitekey: &str,
+        iv: &str,
+        context: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("iv".to_string(), iv.to_string());
@@ -369,7 +471,12 @@ impl TwoCaptcha {
     }
 
     /// Solve MTCaptcha
-    pub async fn mtcaptcha(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn mtcaptcha(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -383,7 +490,12 @@ impl TwoCaptcha {
     }
 
     /// Solve Friendly Captcha
-    pub async fn friendly_captcha(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn friendly_captcha(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -397,7 +509,12 @@ impl TwoCaptcha {
     }
 
     /// Solve Tencent captcha
-    pub async fn tencent(&self, app_id: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn tencent(
+        &self,
+        app_id: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("app_id".to_string(), app_id.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -411,7 +528,13 @@ impl TwoCaptcha {
     }
 
     /// Solve CutCaptcha
-    pub async fn cutcaptcha(&self, misery_key: &str, apikey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn cutcaptcha(
+        &self,
+        misery_key: &str,
+        apikey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("misery_key".to_string(), misery_key.to_string());
         all_params.insert("api_key".to_string(), apikey.to_string());
@@ -426,13 +549,20 @@ impl TwoCaptcha {
     }
 
     /// Solve DataDome Captcha
-    pub async fn datadome(&self, captcha_url: &str, pageurl: &str, user_agent: &str, proxy: Proxy, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn datadome(
+        &self,
+        captcha_url: &str,
+        pageurl: &str,
+        user_agent: &str,
+        proxy: Proxy,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("method".to_string(), "datadome".to_string());
         all_params.insert("captcha_url".to_string(), captcha_url.to_string());
         all_params.insert("pageurl".to_string(), pageurl.to_string());
         all_params.insert("userAgent".to_string(), user_agent.to_string());
-        
+
         // Handle proxy
         let proxy_json = serde_json::to_string(&proxy)?;
         all_params.insert("proxy".to_string(), proxy_json);
@@ -445,7 +575,13 @@ impl TwoCaptcha {
     }
 
     /// Solve CyberSiARA captcha
-    pub async fn cybersiara(&self, master_url_id: &str, pageurl: &str, user_agent: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn cybersiara(
+        &self,
+        master_url_id: &str,
+        pageurl: &str,
+        user_agent: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("method".to_string(), "cybersiara".to_string());
         all_params.insert("master_url_id".to_string(), master_url_id.to_string());
@@ -460,7 +596,12 @@ impl TwoCaptcha {
     }
 
     /// Solve Yandex Smart captcha
-    pub async fn yandex_smart(&self, sitekey: &str, url: &str, params: Option<HashMap<String, String>>) -> Result<CaptchaResult> {
+    pub async fn yandex_smart(
+        &self,
+        sitekey: &str,
+        url: &str,
+        params: Option<HashMap<String, String>>,
+    ) -> Result<CaptchaResult> {
         let mut all_params = HashMap::new();
         all_params.insert("sitekey".to_string(), sitekey.to_string());
         all_params.insert("url".to_string(), url.to_string());
@@ -478,7 +619,7 @@ impl TwoCaptcha {
         &self,
         timeout: Option<Duration>,
         polling_interval: Option<Duration>,
-        params: HashMap<String, String>
+        params: HashMap<String, String>,
     ) -> Result<CaptchaResult> {
         let id = self.send(params).await?;
         let mut result = CaptchaResult {
@@ -496,7 +637,10 @@ impl TwoCaptcha {
             if self.extended_response {
                 if let Ok(extended) = serde_json::from_str::<ExtendedResponse>(&code) {
                     let mut extended_map = HashMap::new();
-                    extended_map.insert("status".to_string(), serde_json::Value::Number(extended.status.into()));
+                    extended_map.insert(
+                        "status".to_string(),
+                        serde_json::Value::Number(extended.status.into()),
+                    );
                     if let Some(request) = extended.request {
                         extended_map.insert("code".to_string(), serde_json::Value::String(request));
                     }
@@ -517,7 +661,12 @@ impl TwoCaptcha {
     }
 
     /// Wait for captcha result with polling
-    async fn wait_result(&self, id: &str, timeout: Duration, polling_interval: Duration) -> Result<String> {
+    async fn wait_result(
+        &self,
+        id: &str,
+        timeout: Duration,
+        polling_interval: Duration,
+    ) -> Result<String> {
         let start = Instant::now();
 
         while start.elapsed() < timeout {
@@ -531,7 +680,10 @@ impl TwoCaptcha {
             }
         }
 
-        Err(TwoCaptchaError::Timeout(format!("timeout {} exceeded", timeout.as_secs())))
+        Err(TwoCaptchaError::Timeout(format!(
+            "timeout {} exceeded",
+            timeout.as_secs()
+        )))
     }
 
     /// Send captcha for solving
@@ -554,7 +706,10 @@ impl TwoCaptcha {
         };
 
         if !response.starts_with("OK|") {
-            return Err(TwoCaptchaError::Api(format!("cannot recognize response {}", response)));
+            return Err(TwoCaptchaError::Api(format!(
+                "cannot recognize response {}",
+                response
+            )));
         }
 
         Ok(response[3..].to_string())
@@ -579,7 +734,10 @@ impl TwoCaptcha {
                 return Err(TwoCaptchaError::Network("CAPTCHA_NOT_READY".to_string()));
             }
             if response_data.get("status").and_then(|v| v.as_i64()) != Some(1) {
-                return Err(TwoCaptchaError::Api(format!("Unexpected status in response: {}", response)));
+                return Err(TwoCaptchaError::Api(format!(
+                    "Unexpected status in response: {}",
+                    response
+                )));
             }
             return Ok(response);
         } else {
@@ -587,7 +745,10 @@ impl TwoCaptcha {
                 return Err(TwoCaptchaError::Network("CAPTCHA_NOT_READY".to_string()));
             }
             if !response.starts_with("OK|") {
-                return Err(TwoCaptchaError::Api(format!("cannot recognize response {}", response)));
+                return Err(TwoCaptchaError::Api(format!(
+                    "cannot recognize response {}",
+                    response
+                )));
             }
             return Ok(response[3..].to_string());
         }
@@ -600,9 +761,10 @@ impl TwoCaptcha {
         params.insert("action".to_string(), "getbalance".to_string());
 
         let response = self.api_client.res(params).await?;
-        let balance: f64 = response.parse()
+        let balance: f64 = response
+            .parse()
             .map_err(|_| TwoCaptchaError::Api(format!("Invalid balance response: {}", response)))?;
-        
+
         Ok(Balance(balance))
     }
 
@@ -610,8 +772,10 @@ impl TwoCaptcha {
     pub async fn report(&self, id: &str, correct: bool) -> Result<()> {
         let mut params = HashMap::new();
         params.insert("key".to_string(), self.api_key.clone());
-        params.insert("action".to_string(), 
-            if correct { "reportgood" } else { "reportbad" }.to_string());
+        params.insert(
+            "action".to_string(),
+            if correct { "reportgood" } else { "reportbad" }.to_string(),
+        );
         params.insert("id".to_string(), id.to_string());
 
         self.api_client.res(params).await?;
@@ -650,7 +814,7 @@ mod tests {
             None,
             None,
         );
-        
+
         assert_eq!(client.api_key, "test_key");
         assert_eq!(client.soft_id, Some(1234));
         assert_eq!(client.max_files, 9);

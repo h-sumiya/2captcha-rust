@@ -56,7 +56,7 @@ impl AudioLanguage {
             AudioLanguage::French => "fr",
         }
     }
-    
+
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "en" => Some(AudioLanguage::English),

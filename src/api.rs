@@ -1,5 +1,5 @@
 use crate::error::{Result, TwoCaptchaError};
-use reqwest::{multipart::Form, Client, Response};
+use reqwest::{Client, Response, multipart::Form};
 use std::collections::HashMap;
 
 /// API client for communicating with 2captcha service

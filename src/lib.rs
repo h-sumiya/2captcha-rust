@@ -45,12 +45,9 @@ pub mod utils;
 
 // Re-export main types
 pub use api::ApiClient;
-pub use error::{TwoCaptchaError, Result};
+pub use error::{Result, TwoCaptchaError};
 pub use solver::TwoCaptcha;
-pub use types::{
-    AudioLanguage, Balance, CaptchaResult, ExtendedResponse, 
-    Proxy, RecaptchaVersion
-};
+pub use types::{AudioLanguage, Balance, CaptchaResult, ExtendedResponse, Proxy, RecaptchaVersion};
 
 // Re-export commonly used traits
 pub use error::SolverExceptions;
