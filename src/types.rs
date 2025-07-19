@@ -56,16 +56,20 @@ impl AudioLanguage {
             AudioLanguage::French => "fr",
         }
     }
+}
 
-    pub fn from_str(s: &str) -> Option<Self> {
+impl std::str::FromStr for AudioLanguage {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
-            "en" => Some(AudioLanguage::English),
-            "ru" => Some(AudioLanguage::Russian),
-            "de" => Some(AudioLanguage::German),
-            "el" => Some(AudioLanguage::Greek),
-            "pt" => Some(AudioLanguage::Portuguese),
-            "fr" => Some(AudioLanguage::French),
-            _ => None,
+            "en" => Ok(AudioLanguage::English),
+            "ru" => Ok(AudioLanguage::Russian),
+            "de" => Ok(AudioLanguage::German),
+            "el" => Ok(AudioLanguage::Greek),
+            "pt" => Ok(AudioLanguage::Portuguese),
+            "fr" => Ok(AudioLanguage::French),
+            _ => Err(()),
         }
     }
 }

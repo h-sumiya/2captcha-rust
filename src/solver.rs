@@ -11,6 +11,18 @@ use crate::types::{
 };
 use crate::utils::Utils;
 
+/// Configuration options for [`TwoCaptcha`]
+#[derive(Debug, Clone, Default)]
+pub struct TwoCaptchaConfig {
+    pub soft_id: Option<u32>,
+    pub callback: Option<String>,
+    pub default_timeout: Option<Duration>,
+    pub recaptcha_timeout: Option<Duration>,
+    pub polling_interval: Option<Duration>,
+    pub server: Option<String>,
+    pub extended_response: Option<bool>,
+}
+
 /// Main TwoCaptcha solver client
 #[derive(Debug, Clone)]
 pub struct TwoCaptcha {
@@ -27,26 +39,17 @@ pub struct TwoCaptcha {
 
 impl TwoCaptcha {
     /// Create a new TwoCaptcha client
-    pub fn new(
-        api_key: String,
-        soft_id: Option<u32>,
-        callback: Option<String>,
-        default_timeout: Option<Duration>,
-        recaptcha_timeout: Option<Duration>,
-        polling_interval: Option<Duration>,
-        server: Option<String>,
-        extended_response: Option<bool>,
-    ) -> Self {
+    pub fn new(api_key: String, config: TwoCaptchaConfig) -> Self {
         Self {
             api_key,
-            soft_id: soft_id.or(Some(4580)),
-            callback,
-            default_timeout: default_timeout.unwrap_or(Duration::from_secs(120)),
-            recaptcha_timeout: recaptcha_timeout.unwrap_or(Duration::from_secs(600)),
-            polling_interval: polling_interval.unwrap_or(Duration::from_secs(10)),
-            api_client: ApiClient::new(server),
+            soft_id: config.soft_id.or(Some(4580)),
+            callback: config.callback,
+            default_timeout: config.default_timeout.unwrap_or(Duration::from_secs(120)),
+            recaptcha_timeout: config.recaptcha_timeout.unwrap_or(Duration::from_secs(600)),
+            polling_interval: config.polling_interval.unwrap_or(Duration::from_secs(10)),
+            api_client: ApiClient::new(config.server),
             max_files: 9,
-            extended_response: extended_response.unwrap_or(false),
+            extended_response: config.extended_response.unwrap_or(false),
         }
     }
 
@@ -739,7 +742,7 @@ impl TwoCaptcha {
                     response
                 )));
             }
-            return Ok(response);
+            Ok(response)
         } else {
             if response == "CAPCHA_NOT_READY" {
                 return Err(TwoCaptchaError::Network("CAPTCHA_NOT_READY".to_string()));
@@ -750,7 +753,7 @@ impl TwoCaptcha {
                     response
                 )));
             }
-            return Ok(response[3..].to_string());
+            Ok(response[3..].to_string())
         }
     }
 
@@ -804,16 +807,11 @@ mod tests {
 
     #[test]
     fn test_twocaptcha_creation() {
-        let client = TwoCaptcha::new(
-            "test_key".to_string(),
-            Some(1234),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        );
+        let config = TwoCaptchaConfig {
+            soft_id: Some(1234),
+            ..Default::default()
+        };
+        let client = TwoCaptcha::new("test_key".to_string(), config);
 
         assert_eq!(client.api_key, "test_key");
         assert_eq!(client.soft_id, Some(1234));

@@ -48,9 +48,7 @@ impl ApiClient {
             let mut form_params = params.clone();
             form_params.remove("file");
 
-            let file_content = tokio::fs::read(&file_path)
-                .await
-                .map_err(|e| TwoCaptchaError::Io(e))?;
+            let file_content = tokio::fs::read(&file_path).await?;
 
             let mut form = Form::new();
             for (key, value) in form_params {

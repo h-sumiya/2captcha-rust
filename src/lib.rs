@@ -7,21 +7,12 @@
 //! ## Example
 //!
 //! ```no_run
-//! use twocaptcha::{TwoCaptcha, RecaptchaVersion};
+//! use twocaptcha::{TwoCaptcha, TwoCaptchaConfig, RecaptchaVersion};
 //! use std::collections::HashMap;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let solver = TwoCaptcha::new(
-//!         "your_api_key".to_string(),
-//!         None,  // soft_id
-//!         None,  // callback
-//!         None,  // default_timeout
-//!         None,  // recaptcha_timeout
-//!         None,  // polling_interval
-//!         None,  // server
-//!         None,  // extended_response
-//!     );
+//!     let solver = TwoCaptcha::new("your_api_key".to_string(), TwoCaptchaConfig::default());
 //!
 //!     // Solve a reCAPTCHA
 //!     let result = solver.recaptcha(
@@ -46,7 +37,7 @@ pub mod utils;
 // Re-export main types
 pub use api::ApiClient;
 pub use error::{Result, TwoCaptchaError};
-pub use solver::TwoCaptcha;
+pub use solver::{TwoCaptcha, TwoCaptchaConfig};
 pub use types::{AudioLanguage, Balance, CaptchaResult, ExtendedResponse, Proxy, RecaptchaVersion};
 
 // Re-export commonly used traits

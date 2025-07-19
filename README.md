@@ -18,21 +18,12 @@ twocaptcha = "0.0.1"
 ## Example
 
 ```rust,no_run
-use twocaptcha::{TwoCaptcha, RecaptchaVersion};
+use twocaptcha::{TwoCaptcha, TwoCaptchaConfig, RecaptchaVersion};
 use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let solver = TwoCaptcha::new(
-        "YOUR_API_KEY".to_string(),
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    );
+    let solver = TwoCaptcha::new("YOUR_API_KEY".to_string(), TwoCaptchaConfig::default());
 
     let mut params = HashMap::new();
     params.insert("min_score".to_string(), "0.3".to_string());
