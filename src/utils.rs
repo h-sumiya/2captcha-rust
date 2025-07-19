@@ -26,8 +26,7 @@ impl Utils {
             let response = reqwest::get(file).await?;
             if response.status() != 200 {
                 return Err(TwoCaptchaError::Validation(format!(
-                    "File could not be downloaded from url: {}",
-                    file
+                    "File could not be downloaded from url: {file}"
                 )));
             }
             let content = response.bytes().await?;
@@ -42,8 +41,7 @@ impl Utils {
         // Check if file exists
         if !Path::new(file).exists() {
             return Err(TwoCaptchaError::Validation(format!(
-                "File not found: {}",
-                file
+                "File not found: {file}"
             )));
         }
 
@@ -57,8 +55,7 @@ impl Utils {
     pub fn extract_files(files: Vec<String>, max_files: usize) -> Result<HashMap<String, String>> {
         if files.len() > max_files {
             return Err(TwoCaptchaError::Validation(format!(
-                "Too many files (max: {})",
-                max_files
+                "Too many files (max: {max_files})"
             )));
         }
 
@@ -66,8 +63,7 @@ impl Utils {
 
         if !not_exists.is_empty() {
             return Err(TwoCaptchaError::Validation(format!(
-                "File not found: {:?}",
-                not_exists
+                "File not found: {not_exists:?}"
             )));
         }
 
@@ -94,8 +90,7 @@ impl Utils {
             // Check if file exists
             if !Path::new(&hint).exists() {
                 return Err(TwoCaptchaError::Validation(format!(
-                    "File not found: {}",
-                    hint
+                    "File not found: {hint}"
                 )));
             }
 

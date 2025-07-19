@@ -82,8 +82,7 @@ impl TwoCaptcha {
             let response = reqwest::get(file).await?;
             if response.status() != 200 {
                 return Err(TwoCaptchaError::Validation(format!(
-                    "File could not be downloaded from url: {}",
-                    file
+                    "File could not be downloaded from url: {file}"
                 )));
             }
             let content = response.bytes().await?;
@@ -710,8 +709,7 @@ impl TwoCaptcha {
 
         if !response.starts_with("OK|") {
             return Err(TwoCaptchaError::Api(format!(
-                "cannot recognize response {}",
-                response
+                "cannot recognize response {response}"
             )));
         }
 
@@ -738,8 +736,7 @@ impl TwoCaptcha {
             }
             if response_data.get("status").and_then(|v| v.as_i64()) != Some(1) {
                 return Err(TwoCaptchaError::Api(format!(
-                    "Unexpected status in response: {}",
-                    response
+                    "Unexpected status in response: {response}"
                 )));
             }
             Ok(response)
@@ -749,8 +746,7 @@ impl TwoCaptcha {
             }
             if !response.starts_with("OK|") {
                 return Err(TwoCaptchaError::Api(format!(
-                    "cannot recognize response {}",
-                    response
+                    "cannot recognize response {response}"
                 )));
             }
             Ok(response[3..].to_string())
@@ -766,7 +762,7 @@ impl TwoCaptcha {
         let response = self.api_client.res(params).await?;
         let balance: f64 = response
             .parse()
-            .map_err(|_| TwoCaptchaError::Api(format!("Invalid balance response: {}", response)))?;
+            .map_err(|_| TwoCaptchaError::Api(format!("Invalid balance response: {response}")))?;
 
         Ok(Balance(balance))
     }
